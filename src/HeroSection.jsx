@@ -225,38 +225,6 @@ export default function HeroSection({
               <span className="cta-icon">✨</span> Generate AI Itinerary & Capsule Wardrobe
             </motion.button>
           </motion.div>
-
-          {/* Trust Indicators Section */}
-          <div className="trust-indicators-grid">
-            <div className="trust-glass-card">
-              <span className="trust-icon">⭐</span>
-              <div className="trust-text">
-                <strong>Trusted by 10k+</strong>
-                <span>Global travellers</span>
-              </div>
-            </div>
-            <div className="trust-glass-card">
-              <span className="trust-icon">🌍</span>
-              <div className="trust-text">
-                <strong>100+ Countries</strong>
-                <span>Curated AI routes</span>
-              </div>
-            </div>
-            <div className="trust-glass-card">
-              <span className="trust-icon">⚡</span>
-              <div className="trust-text">
-                <strong>Under 30 Sec</strong>
-                <span>Full itinerary synthesis</span>
-              </div>
-            </div>
-            <div className="trust-glass-card">
-              <span className="trust-icon">☁️</span>
-              <div className="trust-text">
-                <strong>Live Open-Meteo</strong>
-                <span>16-day climate precision</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* ================= RIGHT SIDE: IMMERSIVE ANIMATED VISUAL UNIVERSE ================= */}
