@@ -43,6 +43,45 @@ export default function HeroSection({
     return () => clearInterval(timer)
   }, [])
 
+  // Dynamic Location Logic
+  const currentCity = place ? place.name : (query && query.trim() !== '' ? query.split(',')[0].trim() : 'Amalfi');
+  const currentCountry = place ? (place.country || '') : (query && query.includes(',') ? query.split(',')[1].trim() : 'Italy');
+  const fullDestName = `${currentCity}${currentCountry ? ', ' + currentCountry : ''}`;
+
+  // Dynamic Transit Hub based on City
+  const transitHub = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? 'Taipei' :
+                     currentCity.toLowerCase().includes('paris') || currentCity.toLowerCase().includes('london') ? 'Zurich' :
+                     currentCity.toLowerCase().includes('new york') || currentCity.toLowerCase().includes('us') ? 'Reykjavik' :
+                     currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? 'Singapore' : 'Paris';
+
+  // Dynamic Weather based on City & Prefs
+  const dynamicWeather = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? { temp: '21°C', desc: 'Mild Sakura Breeze', rain: '0% Rain · Clear Skies', icon: '🌸' } :
+                         currentCity.toLowerCase().includes('paris') || currentCity.toLowerCase().includes('london') ? { temp: '18°C', desc: 'Crisp Classic Air', rain: '10% Rain · Light Breeze', icon: '⛅' } :
+                         currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? { temp: '29°C', desc: 'Tropical Golden Warmth', rain: '5% Rain · Ocean Breeze', icon: '🌴' } :
+                         currentCity.toLowerCase().includes('swiss') || currentCity.toLowerCase().includes('alps') ? { temp: '-2°C', desc: 'Alpine Sun & Powder', rain: '0% Rain · Crisp Winter', icon: '❄️' } :
+                         { temp: '24°C', desc: 'Perfect Golden Hour', rain: '0% Precipitation · Light Breeze', icon: '☀️' };
+
+  // Dynamic Itinerary Preview based on City & Selected Activities
+  const dynamicItinerary = [
+    { day: 'Day 1', icon: '✈️', title: `Arrive & VIP Transfer in ${currentCity}`, tag: 'Logistics', time: '10:30 AM' },
+    { day: 'Day 2', icon: '🏨', title: `Boutique Check-in & Espresso near ${currentCity} Center`, tag: 'Comfort', time: '02:00 PM' },
+    { day: 'Day 3', icon: acts && acts.includes('swim') ? '🏖️' : (acts && acts.includes('hike') ? '🥾' : '🍜'), 
+      title: acts && acts.includes('swim') ? `Private Beach Cabana & Sunset Cocktails` : (acts && acts.includes('hike') ? `Geodesic Trail & Scenic Viewpoint in ${currentCity}` : `Artisan Gastronomy Tasting at ${currentCity} Market`), 
+      tag: acts && acts.includes('swim') ? 'Relaxation' : (acts && acts.includes('hike') ? 'Outdoors' : 'Gastronomy'), time: '12:30 PM' },
+    { day: 'Day 4', icon: acts && acts.includes('work') ? '💻' : (acts && acts.includes('formal') ? '🍷' : '🏛️'), 
+      title: acts && acts.includes('work') ? `Executive Networking & Co-working Lounge` : (acts && acts.includes('formal') ? `Michelin-Star Rooftop Dining in ${currentCity}` : `Private Architecture & Culture Tour of ${currentCity}`), 
+      tag: acts && acts.includes('work') ? 'Business' : (acts && acts.includes('formal') ? 'Fine Dining' : 'Culture'), time: '11:00 AM' },
+    { day: 'Day 5', icon: '🌅', title: `Sunset Photography at Coastal Point`, tag: 'Golden Hour', time: '06:45 PM' },
+    { day: 'Day 6', icon: '🍽️', title: `Terracotta Rooftop Dinner under the Stars`, tag: 'Nightlife', time: '08:30 PM' }
+  ];
+
+  // Dynamic Climate Swatches based on City
+  const dynamicSwatches = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? ['#E87A90', '#5B8C5A', '#FAF5F0', '#2B2B2B'] :
+                          currentCity.toLowerCase().includes('paris') || currentCity.toLowerCase().includes('london') ? ['#C5A059', '#1E3A8A', '#F8F9FA', '#111827'] :
+                          currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? ['#0D9488', '#38BDF8', '#FEF9C3', '#134E4A'] :
+                          currentCity.toLowerCase().includes('swiss') || currentCity.toLowerCase().includes('alps') ? ['#3B82F6', '#93C5FD', '#F0F9FF', '#1E293B'] :
+                          ['#D97757', '#F97316', '#FAF8F5', '#2A2421'];
+
   return (
     <section className="hero-split-section">
       <div className="hero-split-grid">
@@ -237,7 +276,7 @@ export default function HeroSection({
                 <span className="pulse-dot green-dot" />
                 <span>AI SYNTHESIS ENGINE ACTIVE</span>
               </div>
-              <span className="showcase-dest-pill">📍 {place ? place.name : 'Amalfi Coast, Italy'}</span>
+              <span className="showcase-dest-pill">📍 {fullDestName}</span>
             </div>
 
             {/* Animated World Map & Flight Route Area */}
@@ -270,14 +309,14 @@ export default function HeroSection({
 
               {/* Glowing Destination Pins on Map Grid */}
               <div className="map-grid-overlay">
-                <motion.div className="radar-pin pin-tokyo" animate={{ scale: [1, 1.25, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>
-                  📍 <span>Kyoto</span>
+                <motion.div className="radar-pin pin-tokyo" animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>
+                  📍 <span>{startLoc ? startLoc.split(',')[0].trim() : 'London'}</span>
                 </motion.div>
-                <motion.div className="radar-pin pin-paris" animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}>
-                  📍 <span>Paris</span>
+                <motion.div className="radar-pin pin-paris" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}>
+                  📍 <span>{transitHub}</span>
                 </motion.div>
                 <motion.div className="radar-pin pin-amalfi" animate={{ scale: [1.1, 1.3, 1.1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
-                  📍 <span>Amalfi</span>
+                  📍 <span>{currentCity}</span>
                 </motion.div>
               </div>
 
@@ -309,10 +348,10 @@ export default function HeroSection({
                 animate={{ y: [-4, 6, -4] }}
                 transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <span className="w-icon">☀️</span>
+                <span className="w-icon">{dynamicWeather.icon}</span>
                 <div className="w-meta">
-                  <strong>24°C Perfect Golden Hour</strong>
-                  <span>0% Precipitation · Light Breeze</span>
+                  <strong>{dynamicWeather.temp} {dynamicWeather.desc}</strong>
+                  <span>{dynamicWeather.rain}</span>
                 </div>
               </motion.div>
             </div>
@@ -321,18 +360,18 @@ export default function HeroSection({
             <div className="itinerary-preview-wrap">
               <div className="preview-header-row">
                 <span className="preview-lbl">✨ INSTANT AI ITINERARY PREVIEW</span>
-                <span className="preview-badge">6 Days Curated</span>
+                <span className="preview-badge">{tripDays > 0 ? tripDays : 6} Days Curated</span>
               </div>
 
               <div className="staggered-cards-list">
-                {ITINERARY_PREVIEW.map((item, idx) => (
+                {dynamicItinerary.map((item, idx) => (
                   <motion.div
                     key={item.day}
                     className="preview-card-item"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: idx * 0.15, ease: 'easeOut' }}
-                    whileHover={{ scale: 1.02, x: 4, backgroundColor: '#FFF7ED', borderColor: '#D97757' }}
+                    transition={{ duration: 0.35, delay: idx * 0.08, ease: 'easeOut' }}
+                    whileHover={{ scale: 1.01, x: 4, backgroundColor: '#FFF7ED', borderColor: '#D97757' }}
                   >
                     <span className="card-day-lbl">{item.day}</span>
                     <span className="card-icon">{item.icon}</span>
@@ -350,10 +389,9 @@ export default function HeroSection({
             <div className="showcase-palette-strip">
               <span className="strip-lbl">🎨 Extracted Climate Swatches</span>
               <div className="mini-swatch-row">
-                <motion.div className="mini-s" style={{ background: '#D97757' }} whileHover={{ scale: 1.2 }} title="Terracotta" />
-                <motion.div className="mini-s" style={{ background: '#F97316' }} whileHover={{ scale: 1.2 }} title="Sky Amber" />
-                <motion.div className="mini-s" style={{ background: '#FAF8F5' }} whileHover={{ scale: 1.2 }} title="Cream Linen" />
-                <motion.div className="mini-s" style={{ background: '#2A2421' }} whileHover={{ scale: 1.2 }} title="Slate Ink" />
+                {dynamicSwatches.map((color, idx) => (
+                  <motion.div key={idx} className="mini-s" style={{ background: color }} whileHover={{ scale: 1.25 }} title={`Swatch ${idx+1}`} />
+                ))}
                 <span className="strip-tag">🧵 5-4-3-2-1 Capsule Ready</span>
               </div>
             </div>
