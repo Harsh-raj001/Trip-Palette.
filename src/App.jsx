@@ -127,91 +127,34 @@ export default function App() {
         </div>
       </header>
 
-      {/* Hero Section with Search Card */}
-      <section className="arch-hero-section">
-
-        <div className="search-arch-card glass-panel">
-          <div className="form-grid">
-            <div className="field dest-field">
-              <label>DESTINATION</label>
-              <input
-                className="search-input-circular-glow"
-                value={query}
-                placeholder="e.g. Spain, Spain"
-                onChange={e => { setQuery(e.target.value); setPlace(null) }}
-              />
-              {options.length > 0 && !place && (
-                <AnimatePresence>
-                  <motion.div 
-                    className="dropdown glass-panel"
-                    initial={{ opacity: 0, y: -10, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                    transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-                  >
-                    {options.map((c, i) => (
-                      <motion.button 
-                        key={i} 
-                        type="button"
-                        onClick={() => { setPlace(c); setQuery(label(c)); setOptions([]) }}
-                        whileHover={{ x: 6, backgroundColor: 'rgba(217, 119, 87, 0.09)' }}
-                      >
-                        <span className="dest-main-text">📍 {c.name}</span>
-                        <span className="dest-sub-text">{[c.admin, c.country].filter(Boolean).join(', ')}</span>
-                      </motion.button>
-                    ))}
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>
-
-            <div className="field dates-combined-field">
-              <label>TRAVEL DATES & DURATION</label>
-              <DatePickerDropdown
-                start={start}
-                end={end}
-                onSelectStart={setStart}
-                onSelectEnd={setEnd}
-                tripDays={tripDays}
-              />
-            </div>
-          </div>
-
-          <div className="field acts-wrap">
-            <label>ACTIVITIES (OPTIONAL)</label>
-            <div className="chips">
-              {ACTS.map(a => (
-                <button
-                  type="button"
-                  key={a.id}
-                  className={acts.includes(a.id) ? 'chip on' : 'chip'}
-                  onClick={() => toggleAct(a.id)}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="build-palette-btn"
-            onClick={() => {
-              if (!place && options.length > 0) {
-                const c = options[0];
-                setPlace(c);
-                setQuery(label(c));
-                setOptions([]);
-              } else if (place) {
-                const el = document.querySelector('.results-arch-container');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-          >
-            Build my palette
-          </button>
-        </div>
-      </section>
+      {/* Hero Split Section (Version 2.0 UX Apple/Airbnb/Linear) */}
+      <HeroSection
+        query={query}
+        setQuery={setQuery}
+        place={place}
+        setPlace={setPlace}
+        options={options}
+        setOptions={setOptions}
+        start={start}
+        setStart={setStart}
+        end={end}
+        setEnd={setEnd}
+        tripDays={tripDays}
+        acts={acts}
+        toggleAct={toggleAct}
+        ACTS={ACTS}
+        onGenerate={() => {
+          if (!place && options.length > 0) {
+            const c = options[0];
+            setPlace(c);
+            setQuery(label(c));
+            setOptions([]);
+          } else if (place) {
+            const el = document.querySelector('.results-arch-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+      />
 
       <AnimatePresence mode="wait">
         {loading && (
