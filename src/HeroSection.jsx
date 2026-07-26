@@ -1,14 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import DatePickerDropdown from './DatePickerDropdown.jsx'
-
-const AI_CHIPS = [
-  '🧠 Analysing destinations & climate...',
-  '🌦 Checking 16-day historical weather...',
-  '💰 Optimising budget & accommodations...',
-  '🍜 Finding local artisan food & dining...',
-  '📍 Building smart geodesic route...'
-]
+import { searchCities } from './api.js'
 
 const ITINERARY_PREVIEW = [
   { day: 'Day 1', icon: '✈️', title: 'Arrive & VIP Transfer', tag: 'Logistics', time: '10:30 AM' },
@@ -29,40 +22,28 @@ export default function HeroSection({
 }) {
   const [chipIdx, setChipIdx] = useState(0)
   const [startLoc, setStartLoc] = useState('San Francisco, US')
+  const [startOptions, setStartOptions] = useState([])
   const [budget, setBudget] = useState('💳 Moderate')
   const [travellers, setTravellers] = useState('👥 Couple (2)')
   const [transport, setTransport] = useState('✈️ Flights + Train')
   const [accom, setAccom] = useState('🏨 Boutique Hotel')
   const [weatherPref, setWeatherPref] = useState('☀️ Sunny & Warm')
   
-  // Live Synchronization Shimmer State
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [updateMessage, setUpdateMessage] = useState('🧠 Updating itinerary...')
+  const startDebounce = useRef(null)
 
-  // Rotating AI Status Chips
+  // Autocomplete Suggestions for Starting Location (FROM)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setChipIdx(prev => (prev + 1) % AI_CHIPS.length)
-    }, 3200)
-    return () => clearInterval(timer)
-  }, [])
-
-  // Real-Time AI Behaviour Trigger on Input Changes (300-700ms Shimmer)
-  useEffect(() => {
-    setIsUpdating(true)
-    const msgs = [
-      '🧠 Updating itinerary...',
-      '🌤 Analysing weather & climate...',
-      '🍜 Matching restaurants & gems...',
-      '📍 Optimising geodesic route...',
-      '🎨 Curating capsule wardrobe...'
-    ]
-    setUpdateMessage(msgs[Math.floor(Math.random() * msgs.length)])
-    const timer = setTimeout(() => {
-      setIsUpdating(false)
-    }, 450)
-    return () => clearTimeout(timer)
-  }, [query, place, startLoc, start, end, tripDays, budget, travellers, transport, accom, weatherPref, acts])
+    clearTimeout(startDebounce.current)
+    if (!startLoc || startLoc.trim().length < 2) { setStartOptions([]); return }
+    startDebounce.current = setTimeout(async () => {
+      try {
+        const res = await searchCities(startLoc)
+        setStartOptions(res)
+      } catch {
+        setStartOptions([])
+      }
+    }, 280)
+  }, [startLoc])
 
   // Dynamic Location Logic
   const currentCity = place ? place.name : (query && query.trim() !== '' ? query.split(',')[0].trim() : 'Amalfi');
@@ -131,26 +112,9 @@ export default function HeroSection({
     <section className="hero-split-section">
       <div className="hero-split-grid">
         
-        {/* ================= LEFT SIDE: HEADLINE, COPY & AI SEARCH CARD ================= */}
+        {/* ================= HERO SEARCH CARD AREA ================= */}
         <div className="hero-left-column">
           
-          {/* Rotating AI Status Chip */}
-          <div className="ai-status-chip-wrap">
-            <span className="pulse-dot" />
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={chipIdx}
-                className="ai-status-text"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3 }}
-              >
-                {AI_CHIPS[chipIdx]}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-
           {/* Outcome-Focused Headline */}
           <h1 className="hero-main-headline">
             Plan your perfect <span className="highlight-rust">journey</span> in seconds<span className="brand-dot">.</span>
@@ -158,7 +122,7 @@ export default function HeroSection({
 
           {/* Supporting Text */}
           <p className="hero-supporting-text">
-            Our intelligent AI synthesizes personalized itineraries and capsule wardrobes based on your destination, budget, travel style, climate, and available time.
+            Our intelligent assistant synthesizes personalized itineraries and capsule wardrobes based on your destination, budget, travel style, climate, and available time.
           </p>
 
           {/* Premium Floating Search Card */}
@@ -179,6 +143,32 @@ export default function HeroSection({
                   onChange={e => setStartLoc(e.target.value)}
                   placeholder="Your City (e.g. London)"
                 />
+                {startOptions && startOptions.length > 0 && (
+                  <AnimatePresence>
+                    <motion.div 
+                      className="dropdown glass-panel"
+                      initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                    >
+                      {startOptions.map((c, i) => (
+                        <motion.button 
+                          key={i} 
+                          type="button"
+                          onClick={() => { 
+                            setStartLoc(`${c.name}${c.country ? ', ' + c.country : ''}`)
+                            setStartOptions([]) 
+                          }}
+                          whileHover={{ x: 6, backgroundColor: 'rgba(217, 119, 87, 0.09)' }}
+                        >
+                          <span className="dest-main-text">📍 {c.name}</span>
+                          <span className="dest-sub-text">{[c.admin, c.country].filter(Boolean).join(', ')}</span>
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
+                )}
               </div>
 
               {/* Destination */}
@@ -191,7 +181,7 @@ export default function HeroSection({
                   placeholder="Where to? (e.g. Spain, Kyoto)"
                   onChange={e => { setQuery(e.target.value); setPlace(null) }}
                 />
-                {options && options.length > 0 && !place && (
+                {options && options.length > 0 && (
                   <AnimatePresence>
                     <motion.div 
                       className="dropdown glass-panel"
@@ -306,178 +296,9 @@ export default function HeroSection({
               whileHover={{ scale: 1.02, y: -2, boxShadow: '0 15px 35px rgba(217, 119, 87, 0.45)' }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="cta-icon">✨</span> Generate AI Itinerary & Capsule Wardrobe
+              <span className="cta-icon">✨</span> Generate Itinerary & Capsule Wardrobe
             </motion.button>
           </motion.div>
-        </div>
-
-        {/* ================= RIGHT SIDE: IMMERSIVE AI PLANNING LIVE WORKSPACE ================= */}
-        <div className="hero-right-column">
-          <div className="visual-showcase-panel glass-panel">
-            
-            {/* Top AI Planning Live Header */}
-            <div className="showcase-header">
-              <div className="showcase-status">
-                <span className="pulse-dot green-dot" />
-                <span className="ai-live-title">🧠 AI Planning Live</span>
-              </div>
-              <span className="showcase-dest-pill">📍 {fullDestName}</span>
-            </div>
-
-            {/* Live AI Processing Checklist Strip */}
-            <div className="ai-workspace-checklist">
-              <span className="check-item">✓ Reading destination</span>
-              <span className="check-item">✓ Calculating {daysCount}-day timeline</span>
-              <span className="check-item">✓ Matching {weatherPref.replace('☀️ ', '').replace('🍂 ', '')} climate</span>
-              <span className="check-item">✓ Building itinerary</span>
-              <span className="check-item">✓ Selecting hidden gems</span>
-              <span className="check-item done-tag">✓ Done</span>
-            </div>
-
-            {/* Real-Time Shimmer Processing Overlay vs. Synchronized Content */}
-            <AnimatePresence mode="wait">
-              {isUpdating ? (
-                <motion.div
-                  key="updating"
-                  className="ai-updating-overlay"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="shimmer-spinner">✨</div>
-                  <h3>{updateMessage}</h3>
-                  <p>Synchronizing real-time itinerary and capsule wardrobe with your travel preferences...</p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="content"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="showcase-content-body"
-                >
-                  {/* Animated World Map & Geodesic Flight Route Area */}
-                  <div className="animated-map-stage">
-                    
-                    {/* Floating Sunrise Vapor Clouds */}
-                    <motion.div 
-                      className="floating-cloud cloud-1"
-                      animate={{ x: [-20, 40, -20], y: [0, -8, 0] }}
-                      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      ☁️
-                    </motion.div>
-                    <motion.div 
-                      className="floating-cloud cloud-2"
-                      animate={{ x: [30, -30, 30], y: [0, 10, 0] }}
-                      transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      ☁️
-                    </motion.div>
-                    
-                    {/* Subtle Birds Gliding */}
-                    <motion.div 
-                      className="subtle-birds"
-                      animate={{ x: [-80, 240], y: [20, -30] }}
-                      transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-                    >
-                      🕊️ 🕊️
-                    </motion.div>
-
-                    {/* Glowing Destination Pins on Geodesic Grid */}
-                    <div className="map-grid-overlay">
-                      <motion.div className="radar-pin pin-tokyo" animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>
-                        📍 <span>{startLoc ? startLoc.split(',')[0].trim() : 'London'}</span>
-                      </motion.div>
-                      <motion.div className="radar-pin pin-paris" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}>
-                        📍 <span>{transitHub}</span>
-                      </motion.div>
-                      <motion.div className="radar-pin pin-amalfi" animate={{ scale: [1.1, 1.3, 1.1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
-                        📍 <span>{currentCity}</span>
-                      </motion.div>
-                    </div>
-
-                    {/* Animated Flight/Train Route & Transport Beacon */}
-                    <svg className="flight-path-svg" viewBox="0 0 300 120">
-                      <path
-                        d="M 30,90 Q 150,10 270,70"
-                        fill="none"
-                        stroke="#D97757"
-                        strokeWidth="2"
-                        strokeDasharray="6,6"
-                      />
-                    </svg>
-                    <motion.div
-                      style={{ position: 'absolute', zIndex: 4, fontSize: '1.25rem', pointerEvents: 'none', left: 0, top: 0 }}
-                      animate={{ 
-                        x: [30, 150, 270],
-                        y: [90, 10, 70],
-                        rotate: transportIcon === '✈️' ? [-20, 10, 35] : [0, 0, 0]
-                      }}
-                      transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      {transportIcon}
-                    </motion.div>
-
-                    {/* Live Weather & Climate Pill */}
-                    <motion.div 
-                      className="live-weather-float glass-panel"
-                      animate={{ y: [-4, 6, -4] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      <span className="w-icon">{dynamicWeather.icon}</span>
-                      <div className="w-meta">
-                        <strong>{dynamicWeather.temp} {dynamicWeather.desc}</strong>
-                        <span>{dynamicWeather.rain}</span>
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Staggered Animated Itinerary Preview Cards (Duration Scaled) */}
-                  <div className="itinerary-preview-wrap">
-                    <div className="preview-header-row">
-                      <span className="preview-lbl">✨ SYNCHRONIZED ITINERARY TIMELINE</span>
-                      <span className="preview-badge">{daysCount} Days Curated</span>
-                    </div>
-
-                    <div className="staggered-cards-list">
-                      {dynamicItinerary.map((item, idx) => (
-                        <motion.div
-                          key={item.day}
-                          className="preview-card-item"
-                          initial={{ opacity: 0, x: 15 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: idx * 0.06, ease: 'easeOut' }}
-                          whileHover={{ scale: 1.01, x: 4, backgroundColor: '#FFF7ED', borderColor: '#D97757' }}
-                        >
-                          <span className="card-day-lbl">{item.day}</span>
-                          <span className="card-icon">{item.icon}</span>
-                          <div className="card-info">
-                            <strong>{item.title}</strong>
-                            <span>{item.tag} · {item.time}</span>
-                          </div>
-                          <span className="card-check">✓</span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Bottom Palette & Wardrobe Strip */}
-                  <div className="showcase-palette-strip">
-                    <span className="strip-lbl">🎨 Extracted Climate Swatches</span>
-                    <div className="mini-swatch-row">
-                      {dynamicSwatches.map((color, idx) => (
-                        <motion.div key={idx} className="mini-s" style={{ background: color }} whileHover={{ scale: 1.25 }} title={`Swatch ${idx+1}`} />
-                      ))}
-                      <span className="strip-tag">🧵 5-4-3-2-1 Capsule Ready</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-          </div>
         </div>
 
       </div>

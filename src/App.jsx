@@ -7,7 +7,6 @@ import { buildPacking, colorNotes, verifyCapsulePairing } from './packing.js'
 import BoardingPassModal from './BoardingPassModal.jsx'
 import Globe3D from './Globe3D.jsx'
 import AILoader from './AILoader.jsx'
-import AIInsights from './AIInsights.jsx'
 import DatePickerDropdown from './DatePickerDropdown.jsx'
 import HeroSection from './HeroSection.jsx'
 
@@ -191,16 +190,6 @@ export default function App() {
               </button>
             </div>
           </div>
-
-          {/* AI Planning Assistant & Confidence Panel (Version 2.0 UX Hero) */}
-          <AIInsights
-            place={place}
-            weather={weather}
-            palette={palette}
-            packing={packing}
-            notes={notes}
-            acts={acts}
-          />
 
           {/* 3D Architectural Dual Grid */}
           <div className="arch-dual-grid">

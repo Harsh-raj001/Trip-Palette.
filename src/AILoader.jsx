@@ -32,7 +32,7 @@ export default function AILoader({ destination }) {
       <div className="ai-loader-header">
         <div className="ai-badge-pulse">
           <span className="pulse-dot"></span>
-          AI PLANNING ASSISTANT ACTIVE
+          ITINERARY & CAPSULE CURATOR ACTIVE
         </div>
         <h3>Synthesizing {destination || 'Your Destination'}</h3>
       </div>
