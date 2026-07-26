@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Builds straight into the website folder so it deploys with cindyzhu.com.au
 export default defineConfig({
   plugins: [react()],
-  base: '/trip-palette/',
+  base: '/',
   build: {
-    outDir: '../trip-palette',
+    outDir: 'dist',
     emptyOutDir: true
   }
 })
