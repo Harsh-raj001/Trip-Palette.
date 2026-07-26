@@ -8,6 +8,7 @@ import BoardingPassModal from './BoardingPassModal.jsx'
 import Globe3D from './Globe3D.jsx'
 import AILoader from './AILoader.jsx'
 import AIInsights from './AIInsights.jsx'
+import DatePickerDropdown from './DatePickerDropdown.jsx'
 
 const ACTS = [
   { id: 'work', label: 'Work / business' },
@@ -140,24 +141,39 @@ export default function App() {
                 onChange={e => { setQuery(e.target.value); setPlace(null) }}
               />
               {options.length > 0 && !place && (
-                <div className="dropdown">
-                  {options.map((c, i) => (
-                    <button key={i} onClick={() => { setPlace(c); setQuery(label(c)); setOptions([]) }}>
-                      {c.name}<span>{[c.admin, c.country].filter(Boolean).join(', ')}</span>
-                    </button>
-                  ))}
-                </div>
+                <AnimatePresence>
+                  <motion.div 
+                    className="dropdown glass-panel"
+                    initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                  >
+                    {options.map((c, i) => (
+                      <motion.button 
+                        key={i} 
+                        type="button"
+                        onClick={() => { setPlace(c); setQuery(label(c)); setOptions([]) }}
+                        whileHover={{ x: 6, backgroundColor: 'rgba(217, 119, 87, 0.09)' }}
+                      >
+                        <span className="dest-main-text">📍 {c.name}</span>
+                        <span className="dest-sub-text">{[c.admin, c.country].filter(Boolean).join(', ')}</span>
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
 
-            <div className="field date-field">
-              <label>FROM</label>
-              <input type="date" value={start} onChange={e => setStart(e.target.value)} />
-            </div>
-
-            <div className="field date-field">
-              <label>TO</label>
-              <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
+            <div className="field dates-combined-field">
+              <label>TRAVEL DATES & DURATION</label>
+              <DatePickerDropdown
+                start={start}
+                end={end}
+                onSelectStart={setStart}
+                onSelectEnd={setEnd}
+                tripDays={tripDays}
+              />
             </div>
           </div>
 
