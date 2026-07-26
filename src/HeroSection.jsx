@@ -35,6 +35,10 @@ export default function HeroSection({
   const [accom, setAccom] = useState('🏨 Boutique Hotel')
   const [weatherPref, setWeatherPref] = useState('☀️ Sunny & Warm')
   
+  // Live Synchronization Shimmer State
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [updateMessage, setUpdateMessage] = useState('🧠 Updating itinerary...')
+
   // Rotating AI Status Chips
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,6 +46,23 @@ export default function HeroSection({
     }, 3200)
     return () => clearInterval(timer)
   }, [])
+
+  // Real-Time AI Behaviour Trigger on Input Changes (300-700ms Shimmer)
+  useEffect(() => {
+    setIsUpdating(true)
+    const msgs = [
+      '🧠 Updating itinerary...',
+      '🌤 Analysing weather & climate...',
+      '🍜 Matching restaurants & gems...',
+      '📍 Optimising geodesic route...',
+      '🎨 Curating capsule wardrobe...'
+    ]
+    setUpdateMessage(msgs[Math.floor(Math.random() * msgs.length)])
+    const timer = setTimeout(() => {
+      setIsUpdating(false)
+    }, 450)
+    return () => clearTimeout(timer)
+  }, [query, place, startLoc, start, end, tripDays, budget, travellers, transport, accom, weatherPref, acts])
 
   // Dynamic Location Logic
   const currentCity = place ? place.name : (query && query.trim() !== '' ? query.split(',')[0].trim() : 'Amalfi');
@@ -54,26 +75,50 @@ export default function HeroSection({
                      currentCity.toLowerCase().includes('new york') || currentCity.toLowerCase().includes('us') ? 'Reykjavik' :
                      currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? 'Singapore' : 'Paris';
 
-  // Dynamic Weather based on City & Prefs
-  const dynamicWeather = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? { temp: '21°C', desc: 'Mild Sakura Breeze', rain: '0% Rain · Clear Skies', icon: '🌸' } :
-                         currentCity.toLowerCase().includes('paris') || currentCity.toLowerCase().includes('london') ? { temp: '18°C', desc: 'Crisp Classic Air', rain: '10% Rain · Light Breeze', icon: '⛅' } :
-                         currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? { temp: '29°C', desc: 'Tropical Golden Warmth', rain: '5% Rain · Ocean Breeze', icon: '🌴' } :
-                         currentCity.toLowerCase().includes('swiss') || currentCity.toLowerCase().includes('alps') ? { temp: '-2°C', desc: 'Alpine Sun & Powder', rain: '0% Rain · Crisp Winter', icon: '❄️' } :
-                         { temp: '24°C', desc: 'Perfect Golden Hour', rain: '0% Precipitation · Light Breeze', icon: '☀️' };
+  // Dynamic Transport Icon & Wording
+  const transportIcon = transport.includes('Train') ? '🚆' : (transport.includes('Car') ? '🚗' : '✈️');
 
-  // Dynamic Itinerary Preview based on City & Selected Activities
-  const dynamicItinerary = [
-    { day: 'Day 1', icon: '✈️', title: `Arrive & VIP Transfer in ${currentCity}`, tag: 'Logistics', time: '10:30 AM' },
-    { day: 'Day 2', icon: '🏨', title: `Boutique Check-in & Espresso near ${currentCity} Center`, tag: 'Comfort', time: '02:00 PM' },
-    { day: 'Day 3', icon: acts && acts.includes('swim') ? '🏖️' : (acts && acts.includes('hike') ? '🥾' : '🍜'), 
+  // Dynamic Weather based on City & Prefs
+  const baseWeather = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? { temp: '21°C', desc: 'Mild Sakura Breeze', rain: '0% Rain · Clear Skies', icon: '🌸' } :
+                      currentCity.toLowerCase().includes('paris') || currentCity.toLowerCase().includes('london') ? { temp: '18°C', desc: 'Crisp Classic Air', rain: '10% Rain · Light Breeze', icon: '⛅' } :
+                      currentCity.toLowerCase().includes('bali') || currentCity.toLowerCase().includes('thai') ? { temp: '29°C', desc: 'Tropical Golden Warmth', rain: '5% Rain · Ocean Breeze', icon: '🌴' } :
+                      currentCity.toLowerCase().includes('swiss') || currentCity.toLowerCase().includes('alps') ? { temp: '-2°C', desc: 'Alpine Sun & Powder', rain: '0% Rain · Crisp Winter', icon: '❄️' } :
+                      { temp: '24°C', desc: 'Perfect Golden Hour', rain: '0% Precipitation · Light Breeze', icon: '☀️' };
+  
+  const dynamicWeather = weatherPref.includes('Cool') ? { ...baseWeather, temp: '16°C', desc: 'Cool Autumn Air', icon: '🍂' } :
+                         weatherPref.includes('Sunny') ? { ...baseWeather, temp: '26°C', desc: 'Golden Sun & Clear Skies', icon: '☀️' } : baseWeather;
+
+  // Dynamic Itinerary Preview scaling with Trip Duration (tripDays) & User Prefs
+  const daysCount = tripDays > 0 ? Math.min(Math.max(tripDays, 3), 14) : 6;
+  const accomClean = accom.replace('🏨 ', '').replace('🏡 ', '').replace('🏨', '').replace('🏡', '').trim();
+  const travelStyle = travellers.split(' ')[0] || 'Couple';
+  const budgetTier = budget.replace('🪙 ', '').replace('💳 ', '').replace('💎 ', '').trim();
+
+  const dayTemplates = [
+    { icon: transportIcon, title: `Arrive in ${currentCity} & VIP Transfer`, tag: 'Logistics', time: '10:30 AM' },
+    { icon: '🏨', title: `${accomClean} Check-in & Espresso near Center`, tag: 'Comfort', time: '02:00 PM' },
+    { icon: acts && acts.includes('swim') ? '🏖️' : (acts && acts.includes('hike') ? '🥾' : '🍜'), 
       title: acts && acts.includes('swim') ? `Private Beach Cabana & Sunset Cocktails` : (acts && acts.includes('hike') ? `Geodesic Trail & Scenic Viewpoint in ${currentCity}` : `Artisan Gastronomy Tasting at ${currentCity} Market`), 
       tag: acts && acts.includes('swim') ? 'Relaxation' : (acts && acts.includes('hike') ? 'Outdoors' : 'Gastronomy'), time: '12:30 PM' },
-    { day: 'Day 4', icon: acts && acts.includes('work') ? '💻' : (acts && acts.includes('formal') ? '🍷' : '🏛️'), 
+    { icon: acts && acts.includes('work') ? '💻' : (acts && acts.includes('formal') ? '🍷' : '🏛️'), 
       title: acts && acts.includes('work') ? `Executive Networking & Co-working Lounge` : (acts && acts.includes('formal') ? `Michelin-Star Rooftop Dining in ${currentCity}` : `Private Architecture & Culture Tour of ${currentCity}`), 
       tag: acts && acts.includes('work') ? 'Business' : (acts && acts.includes('formal') ? 'Fine Dining' : 'Culture'), time: '11:00 AM' },
-    { day: 'Day 5', icon: '🌅', title: `Sunset Photography at Coastal Point`, tag: 'Golden Hour', time: '06:45 PM' },
-    { day: 'Day 6', icon: '🍽️', title: `Terracotta Rooftop Dinner under the Stars`, tag: 'Nightlife', time: '08:30 PM' }
+    { icon: '🌅', title: `Sunset Photography at Coastal Viewpoint`, tag: 'Golden Hour', time: '06:45 PM' },
+    { icon: '🍽️', title: `Terracotta Rooftop Farewell Dinner (${budgetTier})`, tag: 'Nightlife', time: '08:30 PM' },
+    { icon: '🍷', title: `Private Vineyard & Heritage Wine Tasting`, tag: 'Sommelier Choice', time: '03:00 PM' },
+    { icon: '⛵', title: `Private Coastal Catamaran Charter in ${currentCity}`, tag: 'Excursion', time: '11:30 AM' },
+    { icon: '🛀', title: `Thermal Geothermal Spa & Holistic Wellness`, tag: 'Rejuvenation', time: '04:00 PM' },
+    { icon: '🎨', title: `Private Contemporary Gallery & Atelier Visit`, tag: 'Arts', time: '01:30 PM' },
+    { icon: '⛰️', title: `Alpine Geodesic Cable Car & Summit Lunch`, tag: 'Adventure', time: '10:00 AM' },
+    { icon: '🛍️', title: `Artisan Fashion Boutique Curated Walk`, tag: 'Style & Design', time: '02:30 PM' },
+    { icon: '🌌', title: `Stargazing Observatory Night Tour`, tag: 'Astronomy', time: '09:30 PM' },
+    { icon: transportIcon, title: `VIP Terminal Lounge & Departure from ${currentCity}`, tag: 'Farewell', time: '11:00 AM' }
   ];
+
+  const dynamicItinerary = Array.from({ length: daysCount }, (_, i) => ({
+    day: `Day ${i + 1}`,
+    ...(dayTemplates[i % dayTemplates.length])
+  }));
 
   // Dynamic Climate Swatches based on City
   const dynamicSwatches = currentCity.toLowerCase().includes('kyoto') || currentCity.toLowerCase().includes('tokyo') ? ['#E87A90', '#5B8C5A', '#FAF5F0', '#2B2B2B'] :
@@ -266,135 +311,171 @@ export default function HeroSection({
           </motion.div>
         </div>
 
-        {/* ================= RIGHT SIDE: IMMERSIVE ANIMATED VISUAL UNIVERSE ================= */}
+        {/* ================= RIGHT SIDE: IMMERSIVE AI PLANNING LIVE WORKSPACE ================= */}
         <div className="hero-right-column">
           <div className="visual-showcase-panel glass-panel">
             
-            {/* Top Showcase Header */}
+            {/* Top AI Planning Live Header */}
             <div className="showcase-header">
               <div className="showcase-status">
                 <span className="pulse-dot green-dot" />
-                <span>AI SYNTHESIS ENGINE ACTIVE</span>
+                <span className="ai-live-title">🧠 AI Planning Live</span>
               </div>
               <span className="showcase-dest-pill">📍 {fullDestName}</span>
             </div>
 
-            {/* Animated World Map & Flight Route Area */}
-            <div className="animated-map-stage">
-              
-              {/* Floating Sunrise Vapor Clouds */}
-              <motion.div 
-                className="floating-cloud cloud-1"
-                animate={{ x: [-20, 40, -20], y: [0, -8, 0] }}
-                transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                ☁️
-              </motion.div>
-              <motion.div 
-                className="floating-cloud cloud-2"
-                animate={{ x: [30, -30, 30], y: [0, 10, 0] }}
-                transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                ☁️
-              </motion.div>
-              
-              {/* Subtle Birds Gliding */}
-              <motion.div 
-                className="subtle-birds"
-                animate={{ x: [-80, 240], y: [20, -30] }}
-                transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-              >
-                🕊️ 🕊️
-              </motion.div>
-
-              {/* Glowing Destination Pins on Map Grid */}
-              <div className="map-grid-overlay">
-                <motion.div className="radar-pin pin-tokyo" animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>
-                  📍 <span>{startLoc ? startLoc.split(',')[0].trim() : 'London'}</span>
-                </motion.div>
-                <motion.div className="radar-pin pin-paris" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}>
-                  📍 <span>{transitHub}</span>
-                </motion.div>
-                <motion.div className="radar-pin pin-amalfi" animate={{ scale: [1.1, 1.3, 1.1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
-                  📍 <span>{currentCity}</span>
-                </motion.div>
-              </div>
-
-              {/* Animated Flight Route & Airplane Beacon */}
-              <svg className="flight-path-svg" viewBox="0 0 300 120">
-                <path
-                  d="M 30,90 Q 150,10 270,70"
-                  fill="none"
-                  stroke="#D97757"
-                  strokeWidth="2"
-                  strokeDasharray="6,6"
-                />
-              </svg>
-              <motion.div
-                style={{ position: 'absolute', zIndex: 4, fontSize: '1.2rem', pointerEvents: 'none', left: 0, top: 0 }}
-                animate={{ 
-                  x: [30, 150, 270],
-                  y: [90, 10, 70],
-                  rotate: [-20, 10, 35]
-                }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                ✈️
-              </motion.div>
-
-              {/* Live Weather & Climate Pill */}
-              <motion.div 
-                className="live-weather-float glass-panel"
-                animate={{ y: [-4, 6, -4] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <span className="w-icon">{dynamicWeather.icon}</span>
-                <div className="w-meta">
-                  <strong>{dynamicWeather.temp} {dynamicWeather.desc}</strong>
-                  <span>{dynamicWeather.rain}</span>
-                </div>
-              </motion.div>
+            {/* Live AI Processing Checklist Strip */}
+            <div className="ai-workspace-checklist">
+              <span className="check-item">✓ Reading destination</span>
+              <span className="check-item">✓ Calculating {daysCount}-day timeline</span>
+              <span className="check-item">✓ Matching {weatherPref.replace('☀️ ', '').replace('🍂 ', '')} climate</span>
+              <span className="check-item">✓ Building itinerary</span>
+              <span className="check-item">✓ Selecting hidden gems</span>
+              <span className="check-item done-tag">✓ Done</span>
             </div>
 
-            {/* Staggered Animated Itinerary Preview Cards */}
-            <div className="itinerary-preview-wrap">
-              <div className="preview-header-row">
-                <span className="preview-lbl">✨ INSTANT AI ITINERARY PREVIEW</span>
-                <span className="preview-badge">{tripDays > 0 ? tripDays : 6} Days Curated</span>
-              </div>
+            {/* Real-Time Shimmer Processing Overlay vs. Synchronized Content */}
+            <AnimatePresence mode="wait">
+              {isUpdating ? (
+                <motion.div
+                  key="updating"
+                  className="ai-updating-overlay"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="shimmer-spinner">✨</div>
+                  <h3>{updateMessage}</h3>
+                  <p>Synchronizing real-time itinerary and capsule wardrobe with your travel preferences...</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="content"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="showcase-content-body"
+                >
+                  {/* Animated World Map & Geodesic Flight Route Area */}
+                  <div className="animated-map-stage">
+                    
+                    {/* Floating Sunrise Vapor Clouds */}
+                    <motion.div 
+                      className="floating-cloud cloud-1"
+                      animate={{ x: [-20, 40, -20], y: [0, -8, 0] }}
+                      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      ☁️
+                    </motion.div>
+                    <motion.div 
+                      className="floating-cloud cloud-2"
+                      animate={{ x: [30, -30, 30], y: [0, 10, 0] }}
+                      transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      ☁️
+                    </motion.div>
+                    
+                    {/* Subtle Birds Gliding */}
+                    <motion.div 
+                      className="subtle-birds"
+                      animate={{ x: [-80, 240], y: [20, -30] }}
+                      transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+                    >
+                      🕊️ 🕊️
+                    </motion.div>
 
-              <div className="staggered-cards-list">
-                {dynamicItinerary.map((item, idx) => (
-                  <motion.div
-                    key={item.day}
-                    className="preview-card-item"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.35, delay: idx * 0.08, ease: 'easeOut' }}
-                    whileHover={{ scale: 1.01, x: 4, backgroundColor: '#FFF7ED', borderColor: '#D97757' }}
-                  >
-                    <span className="card-day-lbl">{item.day}</span>
-                    <span className="card-icon">{item.icon}</span>
-                    <div className="card-info">
-                      <strong>{item.title}</strong>
-                      <span>{item.tag} · {item.time}</span>
+                    {/* Glowing Destination Pins on Geodesic Grid */}
+                    <div className="map-grid-overlay">
+                      <motion.div className="radar-pin pin-tokyo" animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2.5, repeat: Infinity }}>
+                        📍 <span>{startLoc ? startLoc.split(',')[0].trim() : 'London'}</span>
+                      </motion.div>
+                      <motion.div className="radar-pin pin-paris" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}>
+                        📍 <span>{transitHub}</span>
+                      </motion.div>
+                      <motion.div className="radar-pin pin-amalfi" animate={{ scale: [1.1, 1.3, 1.1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
+                        📍 <span>{currentCity}</span>
+                      </motion.div>
                     </div>
-                    <span className="card-check">✓</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
 
-            {/* Bottom Palette & Wardrobe Strip */}
-            <div className="showcase-palette-strip">
-              <span className="strip-lbl">🎨 Extracted Climate Swatches</span>
-              <div className="mini-swatch-row">
-                {dynamicSwatches.map((color, idx) => (
-                  <motion.div key={idx} className="mini-s" style={{ background: color }} whileHover={{ scale: 1.25 }} title={`Swatch ${idx+1}`} />
-                ))}
-                <span className="strip-tag">🧵 5-4-3-2-1 Capsule Ready</span>
-              </div>
-            </div>
+                    {/* Animated Flight/Train Route & Transport Beacon */}
+                    <svg className="flight-path-svg" viewBox="0 0 300 120">
+                      <path
+                        d="M 30,90 Q 150,10 270,70"
+                        fill="none"
+                        stroke="#D97757"
+                        strokeWidth="2"
+                        strokeDasharray="6,6"
+                      />
+                    </svg>
+                    <motion.div
+                      style={{ position: 'absolute', zIndex: 4, fontSize: '1.25rem', pointerEvents: 'none', left: 0, top: 0 }}
+                      animate={{ 
+                        x: [30, 150, 270],
+                        y: [90, 10, 70],
+                        rotate: transportIcon === '✈️' ? [-20, 10, 35] : [0, 0, 0]
+                      }}
+                      transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      {transportIcon}
+                    </motion.div>
+
+                    {/* Live Weather & Climate Pill */}
+                    <motion.div 
+                      className="live-weather-float glass-panel"
+                      animate={{ y: [-4, 6, -4] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <span className="w-icon">{dynamicWeather.icon}</span>
+                      <div className="w-meta">
+                        <strong>{dynamicWeather.temp} {dynamicWeather.desc}</strong>
+                        <span>{dynamicWeather.rain}</span>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Staggered Animated Itinerary Preview Cards (Duration Scaled) */}
+                  <div className="itinerary-preview-wrap">
+                    <div className="preview-header-row">
+                      <span className="preview-lbl">✨ SYNCHRONIZED ITINERARY TIMELINE</span>
+                      <span className="preview-badge">{daysCount} Days Curated</span>
+                    </div>
+
+                    <div className="staggered-cards-list">
+                      {dynamicItinerary.map((item, idx) => (
+                        <motion.div
+                          key={item.day}
+                          className="preview-card-item"
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.06, ease: 'easeOut' }}
+                          whileHover={{ scale: 1.01, x: 4, backgroundColor: '#FFF7ED', borderColor: '#D97757' }}
+                        >
+                          <span className="card-day-lbl">{item.day}</span>
+                          <span className="card-icon">{item.icon}</span>
+                          <div className="card-info">
+                            <strong>{item.title}</strong>
+                            <span>{item.tag} · {item.time}</span>
+                          </div>
+                          <span className="card-check">✓</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom Palette & Wardrobe Strip */}
+                  <div className="showcase-palette-strip">
+                    <span className="strip-lbl">🎨 Extracted Climate Swatches</span>
+                    <div className="mini-swatch-row">
+                      {dynamicSwatches.map((color, idx) => (
+                        <motion.div key={idx} className="mini-s" style={{ background: color }} whileHover={{ scale: 1.25 }} title={`Swatch ${idx+1}`} />
+                      ))}
+                      <span className="strip-tag">🧵 5-4-3-2-1 Capsule Ready</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
           </div>
         </div>
