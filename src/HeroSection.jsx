@@ -322,17 +322,18 @@ export default function HeroSection({
                   strokeWidth="2"
                   strokeDasharray="6,6"
                 />
-                <motion.text
-                  fontSize="18"
-                  animate={{ 
-                    offsetDistance: ['0%', '100%']
-                  }}
-                  style={{ offsetPath: 'path("M 30,90 Q 150,10 270,70")', offsetRotate: 'auto 90deg' }}
-                  transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                >
-                  ✈️
-                </motion.text>
               </svg>
+              <motion.div
+                style={{ position: 'absolute', zIndex: 4, fontSize: '1.2rem', pointerEvents: 'none', left: 0, top: 0 }}
+                animate={{ 
+                  x: [30, 150, 270],
+                  y: [90, 10, 70],
+                  rotate: [-20, 10, 35]
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                ✈️
+              </motion.div>
 
               {/* Live Weather & Climate Pill */}
               <motion.div 
