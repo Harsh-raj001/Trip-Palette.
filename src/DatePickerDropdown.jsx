@@ -108,8 +108,9 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
           type="button"
           className={`date-trigger-pill ${isOpen && activeTab === 'start' ? 'active' : ''}`}
           onClick={() => { setIsOpen(true); setActiveTab('start') }}
-          whileHover={{ scale: 1.03, y: -1 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.04, y: -2, boxShadow: '0 0 25px rgba(255, 69, 0, 0.45), 0 8px 25px rgba(217, 119, 87, 0.35)' }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
           <span className="pill-label">FROM</span>
           <span className="pill-val">📅 {fmtDisplay(start)}</span>
@@ -121,8 +122,9 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
           type="button"
           className={`date-trigger-pill ${isOpen && activeTab === 'end' ? 'active' : ''}`}
           onClick={() => { setIsOpen(true); setActiveTab('end') }}
-          whileHover={{ scale: 1.03, y: -1 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.04, y: -2, boxShadow: '0 0 25px rgba(255, 69, 0, 0.45), 0 8px 25px rgba(217, 119, 87, 0.35)' }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
           <span className="pill-label">TO</span>
           <span className="pill-val">🏁 {fmtDisplay(end)}</span>

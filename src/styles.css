@@ -297,75 +297,107 @@ input.search-input-circular-glow:hover, input.search-input-circular-glow:focus {
 .dest-main-text { font-weight: 600; color: var(--ink); }
 .dest-sub-text { font-size: 0.75rem; color: var(--soft); }
 
-/* CUSTOM CURVED ANIMATED DATE PICKER DROPDOWN */
+/* CUSTOM CURVED ANIMATED DATE PICKER DROPDOWN (Ultra-Immersive Apple/Linear) */
 .date-picker-custom-wrap { position: relative; width: 100%; }
-.date-triggers-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+.date-triggers-row { display: flex; align-items: center; gap: 10px; width: 100%; }
 .date-trigger-pill {
   flex: 1;
   display: flex; justify-content: space-between; align-items: center;
-  background: #FFFFFF; border: 1px solid #E6DCD3; border-radius: 10px;
-  padding: 8px 12px; cursor: pointer; transition: all 0.2s ease;
-  font-family: inherit; font-size: 0.85rem; color: var(--ink);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FAF6F0 100%);
+  border: 1.5px solid rgba(217, 119, 87, 0.4);
+  border-radius: 999px !important;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit; font-size: 0.88rem; color: var(--ink);
+  box-shadow: 0 4px 15px rgba(217, 119, 87, 0.12);
+  outline: none !important;
 }
-.date-trigger-pill:hover, .date-trigger-pill.active {
-  border-color: #D97757;
-  box-shadow: 0 0 15px rgba(217, 119, 87, 0.25);
-  background: #FFFBF7;
+.date-trigger-pill:hover, .date-trigger-pill:focus, .date-trigger-pill.active {
+  border-color: #FF4500 !important;
+  box-shadow: 0 0 25px rgba(255, 69, 0, 0.45), 0 8px 25px rgba(217, 119, 87, 0.35) !important;
+  background: linear-gradient(135deg, #FFFBF7 0%, #FFF7ED 100%) !important;
+  transform: translateY(-2px) scale(1.02);
 }
-.pill-label { font-size: 0.68rem; font-weight: 700; color: #8C827A; letter-spacing: 0.05em; text-transform: uppercase; }
-.pill-val { font-weight: 600; color: var(--ink); font-size: 0.84rem; }
-.date-arrow-sep { font-size: 0.75rem; color: #D97757; font-weight: 700; }
+.pill-label { font-size: 0.72rem; font-weight: 700; color: #D97757; letter-spacing: 0.06em; text-transform: uppercase; }
+.pill-val { font-weight: 700; color: var(--ink); font-size: 0.88rem; }
+.date-arrow-sep { font-size: 0.85rem; color: #FF4500; font-weight: 700; }
 
 .date-dropdown-popover {
-  position: absolute; top: 100%; right: 0; left: 0; min-width: 310px;
-  margin-top: 8px; padding: 18px; background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(217, 119, 87, 0.25); border-radius: 20px;
-  box-shadow: 0 25px 60px rgba(42, 36, 33, 0.2); z-index: 60;
-  display: flex; flex-direction: column; gap: 14px;
+  position: absolute; top: 100%; right: -10px; left: -10px; min-width: 320px;
+  margin-top: 12px; padding: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 2px solid rgba(217, 119, 87, 0.35);
+  border-radius: 24px !important;
+  box-shadow: 0 30px 70px rgba(42, 36, 33, 0.25), 0 0 40px rgba(217, 119, 87, 0.15);
+  z-index: 100;
+  display: flex; flex-direction: column; gap: 16px;
 }
-.date-presets { display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
-.presets-title { font-size: 0.72rem; font-weight: 700; color: #D97757; text-transform: uppercase; letter-spacing: 0.04em; }
-.preset-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.date-presets { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px dashed var(--line); padding-bottom: 14px; }
+.presets-title { font-size: 0.75rem; font-weight: 700; color: #FF4500; text-transform: uppercase; letter-spacing: 0.05em; }
+.preset-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .preset-pills button {
-  background: #FAF6F0; border: 1px solid var(--line); border-radius: 999px;
-  padding: 5px 10px; font-size: 0.75rem; font-weight: 600; color: var(--ink);
-  cursor: pointer; transition: all 0.2s ease;
+  background: #FAF6F0; border: 1px solid var(--line); border-radius: 999px !important;
+  padding: 6px 14px; font-size: 0.78rem; font-weight: 600; color: var(--ink);
+  cursor: pointer; transition: all 0.2s ease; outline: none !important;
 }
-.preset-pills button:hover { background: #D97757; color: #fff; border-color: #D97757; }
+.preset-pills button:hover {
+  background: linear-gradient(135deg, #D97757 0%, #FF4500 100%);
+  color: #fff; border-color: #FF4500;
+  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+  transform: translateY(-1px);
+}
 
 .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
-.month-year-display { font-size: 0.95rem; color: var(--ink); }
-.month-year-display strong { font-family: 'Averia Serif Libre', serif; }
+.month-year-display { font-size: 1.05rem; color: var(--ink); }
+.month-year-display strong { font-family: 'Averia Serif Libre', serif; font-size: 1.15rem; color: #D97757; }
 .cal-nav-btn {
-  background: #FAF6F0; border: 1px solid var(--line); border-radius: 8px;
-  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; color: #D97757; cursor: pointer;
+  background: #FAF6F0; border: 1.5px solid rgba(217, 119, 87, 0.3); border-radius: 50% !important;
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; color: #FF4500; cursor: pointer; transition: all 0.2s; outline: none !important;
 }
+.cal-nav-btn:hover { background: #FF4500; color: #fff; transform: scale(1.1); box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3); }
+
 .cal-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; }
-.cal-day-name { font-size: 0.7rem; font-weight: 700; color: #8C827A; padding: 4px 0; }
-.cal-cells-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day-name { font-size: 0.72rem; font-weight: 700; color: #8C827A; padding: 6px 0; text-transform: uppercase; }
+.cal-cells-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .cal-cell {
-  height: 32px; display: flex; align-items: center; justify-content: center;
-  font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: none;
-  background: transparent; color: var(--ink); cursor: pointer; transition: all 0.15s ease;
+  height: 36px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.88rem; font-weight: 600; border-radius: 999px !important; border: none !important;
+  background: transparent; color: var(--ink); cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none !important; -webkit-tap-highlight-color: transparent;
 }
 .cal-cell.blank { cursor: default; }
-.cal-cell.day:hover { background: #FFF7ED; color: #D97757; }
+.cal-cell.day:hover {
+  background: #FFEDD5 !important;
+  color: #FF4500 !important;
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.35) !important;
+  transform: scale(1.15);
+}
 .cal-cell.is-start, .cal-cell.is-end {
-  background: #D97757 !important; color: #fff !important; font-weight: 700;
-  box-shadow: 0 4px 10px rgba(217, 119, 87, 0.4);
+  background: linear-gradient(135deg, #D97757 0%, #FF4500 100%) !important;
+  color: #ffffff !important; font-weight: 700;
+  box-shadow: 0 0 20px rgba(255, 69, 0, 0.6), 0 6px 15px rgba(217, 119, 87, 0.4) !important;
+  transform: scale(1.1);
 }
-.cal-cell.in-range { background: #FFF7ED; color: #C2410C; border-radius: 4px; }
+.cal-cell.in-range {
+  background: #FFF7ED !important;
+  color: #C2410C !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+}
 
-.date-popover-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
-.trip-duration-badge span { font-size: 0.78rem; color: var(--soft); }
-.trip-duration-badge strong { color: #D97757; }
+.date-popover-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--line); padding-top: 14px; }
+.trip-duration-badge span { font-size: 0.82rem; color: var(--soft); }
+.trip-duration-badge strong { color: #FF4500; font-weight: 700; }
 .cal-done-btn {
-  background: #D97757; color: #fff; border: none; border-radius: 10px;
-  padding: 6px 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-  box-shadow: 0 4px 12px rgba(217, 119, 87, 0.25);
+  background: linear-gradient(135deg, #D97757 0%, #FF4500 100%);
+  color: #fff; border: none; border-radius: 999px !important;
+  padding: 8px 18px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(255, 69, 0, 0.35); transition: all 0.2s; outline: none !important;
 }
+.cal-done-btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 8px 20px rgba(255, 69, 0, 0.5); }
 
 /* Activity Chips (Zoomed Out & Compact) */
 .acts-wrap { margin-top: 2px; }
