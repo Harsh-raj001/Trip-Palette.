@@ -24,6 +24,16 @@ addBox(10, 68, 40, 140, 4)
 // Australia
 addBox(-38, -12, 112, 154, 4)
 
+// Atmospheric clouds drifting above the 3D globe
+const CLOUD_CLUSTERS = [
+  { lat: 22, lon: -40, size: 18 },
+  { lat: -15, lon: 65, size: 24 },
+  { lat: 45, lon: 130, size: 20 },
+  { lat: -30, lon: -110, size: 22 },
+  { lat: 10, lon: 10, size: 16 },
+  { lat: 55, lon: -80, size: 19 }
+]
+
 export default function Globe3D({ place }) {
   const canvasRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -128,13 +138,14 @@ export default function Globe3D({ place }) {
       ctx.stroke()
 
       // 3D Spherical Projection helper
-      const project = (lat, lon) => {
+      const project = (lat, lon, rScale = 1) => {
         const phi = (90 - lat) * (Math.PI / 180)
         const theta = (lon + 180) * (Math.PI / 180)
+        const rad = R * rScale
 
-        let x0 = -(R * Math.sin(phi) * Math.cos(theta))
-        let z0 = R * Math.sin(phi) * Math.sin(theta)
-        let y0 = R * Math.cos(phi)
+        let x0 = -(rad * Math.sin(phi) * Math.cos(theta))
+        let z0 = rad * Math.sin(phi) * Math.sin(theta)
+        let y0 = rad * Math.cos(phi)
 
         const ry = rotRef.current.y
         let x1 = x0 * Math.cos(ry) + z0 * Math.sin(ry)
@@ -251,8 +262,57 @@ export default function Globe3D({ place }) {
             ctx.fillStyle = '#FFFFFF'
             ctx.fillText(labelText, tagX + 1, tagY - 1)
           }
+
+          // 4.5 Geodesic Flight Route Arc & Traveling Airplane Beacon
+          const origLat = 25
+          const origLon = -45
+          const steps = 25
+          ctx.beginPath()
+          let arcFirst = true
+          for (let i = 0; i <= steps; i++) {
+            const frac = i / steps
+            const interpLat = origLat + (place.lat - origLat) * frac
+            const interpLon = origLon + (place.lon - origLon) * frac
+            const arcScale = 1 + Math.sin(frac * Math.PI) * 0.18
+            const ap = project(interpLat, interpLon, arcScale)
+            if (ap.z > -R * 0.15) {
+              if (arcFirst) { ctx.moveTo(ap.x, ap.y); arcFirst = false }
+              else { ctx.lineTo(ap.x, ap.y) }
+            } else { arcFirst = true }
+          }
+          ctx.strokeStyle = 'rgba(255, 69, 0, 0.55)'
+          ctx.lineWidth = 1.8
+          ctx.setLineDash([5, 5])
+          ctx.stroke()
+          ctx.setLineDash([])
+
+          // Traveling Airplane Beacon along the route
+          const flightFrac = (elapsed * 0.35) % 1
+          const planeLat = origLat + (place.lat - origLat) * flightFrac
+          const planeLon = origLon + (place.lon - origLon) * flightFrac
+          const planeScale = 1 + Math.sin(flightFrac * Math.PI) * 0.18
+          const pp = project(planeLat, planeLon, planeScale)
+          if (pp.z > 0) {
+            ctx.font = '16px sans-serif'
+            ctx.fillText('✈️', pp.x - 8, pp.y + 6)
+          }
         }
       }
+
+      // 5. Animated Atmospheric Clouds Drifting in Atmosphere
+      CLOUD_CLUSTERS.forEach(c => {
+        const driftLon = c.lon + elapsed * 5
+        const cp = project(c.lat, driftLon, 1.08)
+        if (cp.z > -R * 0.1) {
+          const alpha = Math.min(0.75, (cp.z / R) * 0.8 + 0.2)
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, alpha * 0.85)})`
+          ctx.beginPath()
+          ctx.arc(cp.x, cp.y, c.size, 0, Math.PI * 2)
+          ctx.arc(cp.x + c.size * 0.65, cp.y - c.size * 0.3, c.size * 0.75, 0, Math.PI * 2)
+          ctx.arc(cp.x - c.size * 0.55, cp.y - c.size * 0.2, c.size * 0.65, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      })
 
       animFrameRef.current = requestAnimationFrame(render)
     }

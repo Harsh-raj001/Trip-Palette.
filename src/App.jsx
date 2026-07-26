@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { searchCities, getWeather, getPhotos } from './api.js'
 import { loadImage, extractPalette } from './palette.js'
 import { buildPacking, colorNotes, verifyCapsulePairing } from './packing.js'
 import BoardingPassModal from './BoardingPassModal.jsx'
 import Globe3D from './Globe3D.jsx'
+import AILoader from './AILoader.jsx'
+import AIInsights from './AIInsights.jsx'
 
 const ACTS = [
   { id: 'work', label: 'Work / business' },
@@ -38,24 +42,29 @@ export default function App() {
 
   const [carryOn, setCarryOn] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [favorites, setFavorites] = useState({})
   const debounce = useRef(null)
+
+  const toggleFavorite = (color, e) => {
+    e.stopPropagation()
+    setFavorites(f => ({ ...f, [color]: !f[color] }))
+  }
 
   useEffect(() => {
     if (place && query === label(place)) return
     clearTimeout(debounce.current)
+    if (!query.trim()) { setOptions([]); return }
     debounce.current = setTimeout(async () => {
       try { setOptions(await searchCities(query)) } catch { setOptions([]) }
-    }, 250)
-    return () => clearTimeout(debounce.current)
+    }, 280)
   }, [query])
 
-  const label = c => `${c.name}, ${c.country}`
+  const label = c => [c.name, c.admin, c.country].filter(Boolean).join(', ')
 
-  async function loadData(pl, s, e) {
-    if (!pl || !s || !e || new Date(e) < new Date(s)) return
-    setLoading(true); setErr(''); setPhotos([]); setPalettes([]); setPhotoIx(0)
+  const loadData = async (pl, s, e) => {
+    setLoading(true); setErr('')
+    const days = Math.round((new Date(e) - new Date(s)) / 86400000) + 1
     try {
-      const days = Math.round((new Date(e) - new Date(s)) / 86400000) + 1
       const [w, ph] = await Promise.all([
         getWeather(pl.lat, pl.lon, s, e),
         getPhotos(label(pl))
@@ -67,6 +76,17 @@ export default function App() {
       }))
       setPalettes(pals)
       setPacking(buildPacking({ days, weather: w, activities: acts, carryOn }))
+      
+      if (w && pals.length > 0) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 85,
+            spread: 75,
+            origin: { y: 0.55 },
+            colors: ['#D97757', '#FF4500', '#FAF6F0', '#E6DCD3', '#3B82F6']
+          })
+        }, 350)
+      }
     } catch (ex) {
       console.error(ex)
       setErr('Could not load forecast or photos for that location.')
@@ -177,12 +197,23 @@ export default function App() {
         </div>
       </section>
 
-      {loading && <div className="state-box glass-panel">🌍 Rotating 3D globe & synthesizing climate intelligence...</div>}
-      {err && <div className="state-box glass-panel err">{err}</div>}
+      <AnimatePresence mode="wait">
+        {loading && (
+          <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <AILoader destination={place ? place.name : query} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {err && !loading && <div className="state-box glass-panel err">{err}</div>}
 
       {/* Results Section */}
       {place && weather && packing && !loading && (
-        <section className="results-arch-container fade-slide-in">
+        <motion.section 
+          className="results-arch-container"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
           {/* Top Header Banner */}
           <div className="results-header-banner glass-panel">
             <div className="banner-left">
@@ -200,6 +231,16 @@ export default function App() {
               </button>
             </div>
           </div>
+
+          {/* AI Planning Assistant & Confidence Panel (Version 2.0 UX Hero) */}
+          <AIInsights
+            place={place}
+            weather={weather}
+            palette={palette}
+            packing={packing}
+            notes={notes}
+            acts={acts}
+          />
 
           {/* 3D Architectural Dual Grid */}
           <div className="arch-dual-grid">
@@ -224,10 +265,24 @@ export default function App() {
                   {palette.length > 0 && (
                     <div className="swatches">
                       {palette.map((h, i) => (
-                        <div className="swatch" key={i}>
-                          <div className="chipcolor" style={{ background: h }} />
+                        <motion.div 
+                          className="swatch" 
+                          key={i}
+                          whileHover={{ y: -5, scale: 1.03, boxShadow: '0 12px 24px rgba(42, 36, 33, 0.15)' }}
+                          transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                        >
+                          <div className="chipcolor" style={{ background: h }}>
+                            <button 
+                              type="button"
+                              className="fav-heart-btn"
+                              onClick={(e) => toggleFavorite(h, e)}
+                              title={favorites[h] ? 'Remove from favorites' : 'Save to favorites'}
+                            >
+                              {favorites[h] ? '❤️' : '🤍'}
+                            </button>
+                          </div>
                           <span>{h}</span>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   )}
@@ -278,16 +333,22 @@ export default function App() {
 
               <ul className="list">
                 {packing.items.map((it, i) => (
-                  <li key={i}>
+                  <motion.li 
+                    key={i}
+                    initial={{ opacity: 0, x: 15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.25 }}
+                    whileHover={{ scale: 1.012, x: 5, backgroundColor: 'rgba(217, 119, 87, 0.09)' }}
+                  >
                     <span className="qty">{it.qty}</span>
                     <span className="name">{it.name}</span>
                     <span className="why">{it.why}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* Boarding Pass Modal */}
