@@ -9,6 +9,7 @@ import Globe3D from './Globe3D.jsx'
 import AILoader from './AILoader.jsx'
 import AIInsights from './AIInsights.jsx'
 import DatePickerDropdown from './DatePickerDropdown.jsx'
+import HeroSection from './HeroSection.jsx'
 
 const ACTS = [
   { id: 'work', label: 'Work / business' },
@@ -147,7 +148,7 @@ export default function App() {
           if (!place && options.length > 0) {
             const c = options[0];
             setPlace(c);
-            setQuery(label(c));
+            setQuery(`${c.name}${c.country ? ', ' + c.country : ''}`);
             setOptions([]);
           } else if (place) {
             const el = document.querySelector('.results-arch-container');
