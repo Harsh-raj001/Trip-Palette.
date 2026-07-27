@@ -382,14 +382,20 @@ export default function App() {
               </div>
               <ul className="list">
                 {attractions && attractions.length > 0 ? attractions.map((attr, idx) => (
-                  <li key={idx} style={{ padding: '8px 0', borderBottom: idx === attractions.length - 1 ? '0' : '1px dashed var(--line)' }}>
-                    <span className="name" style={{ gridArea: 'unset', width: '100%', textTransform: 'capitalize' }}>{attr.name}</span>
-                    <span className="why" style={{ gridArea: 'unset', width: '100%', textTransform: 'capitalize' }}>Highly rated {attr.type}</span>
+                  <li key={idx} style={{ 
+                    padding: '10px 0', 
+                    borderBottom: idx === attractions.length - 1 ? '0' : '1px dashed var(--line)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}>
+                    <span style={{ fontWeight: 600, textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{attr.name}</span>
+                    <span style={{ textTransform: 'capitalize', fontSize: '0.85rem', opacity: 0.8 }}>Highly rated {attr.type}</span>
                   </li>
                 )) : (
-                  <li style={{ padding: '8px 0', borderBottom: '0' }}>
-                    <span className="name" style={{ gridArea: 'unset', width: '100%' }}>Discover locally</span>
-                    <span className="why" style={{ gridArea: 'unset', width: '100%' }}>No hidden gems found nearby.</span>
+                  <li style={{ padding: '10px 0', borderBottom: '0', display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600 }}>Discover locally</span>
+                    <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>No hidden gems found nearby.</span>
                   </li>
                 )}
               </ul>
