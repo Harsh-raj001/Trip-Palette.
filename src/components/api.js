@@ -98,12 +98,47 @@ async function commonsSearchPhotos(place) {
     const j = await (await fetch(u)).json()
     return Object.values(j.query?.pages || {})
       .map(p => ({ info: p.imageinfo?.[0], title: p.title || '' }))
-      .filter(x => x.info && /\.jpe?g$/i.test(x.title) && !BAD_IMG.test(x.title))
-      .map(x => ({
-        url: x.info.thumburl || x.info.url,
-        credit: stripHtml(x.info.extmetadata?.Artist?.value) || 'Wikimedia Commons',
-        page: x.info.descriptionurl
+      .filter(p => !BAD_IMG.test(p.title) && /\.jpe?g$/i.test(p.title))
+      .map(p => ({
+        url: p.info.url,
+        credit: stripHtml(p.info.extmetadata?.Artist?.value) || 'Wikimedia Commons',
+        page: p.info.descriptionurl || ''
       }))
-      .slice(0, 6)
   } catch { return [] }
+}
+
+export async function fetchAttractions(lat, lon) {
+  const query = `
+    [out:json];
+    (
+      node["tourism"="museum"](around:5000,${lat},${lon});
+      node["tourism"="attraction"](around:5000,${lat},${lon});
+      node["historic"="monument"](around:5000,${lat},${lon});
+    );
+    out tags 10;
+  `;
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query
+    });
+    const data = await res.json();
+    if (!data.elements || data.elements.length === 0) return [];
+    
+    const unique = [];
+    const seen = new Set();
+    for (const e of data.elements) {
+      if (e.tags && e.tags.name && !seen.has(e.tags.name)) {
+        seen.add(e.tags.name);
+        unique.push({
+          name: e.tags.name,
+          type: (e.tags.tourism || e.tags.historic || 'attraction').replace('_', ' ')
+        });
+        if (unique.length === 3) break;
+      }
+    }
+    return unique;
+  } catch(e) {
+    return [];
+  }
 }

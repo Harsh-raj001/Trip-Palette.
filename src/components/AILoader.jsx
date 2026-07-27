@@ -1,12 +1,13 @@
+"use client";
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const STEPS = [
-  { icon: '✈️', text: 'Navigating 3D spherical coordinates & flight routes...', progress: 18 },
-  { icon: '🌦️', text: 'Analysing climate & Open-Meteo historical weather averages...', progress: 42 },
-  { icon: '🎨', text: 'Extracting real photographic color swatches & harmony ratios...', progress: 68 },
-  { icon: '🧳', text: 'Executing algorithmic 5-4-3-2-1 capsule wardrobe pairing...', progress: 88 },
-  { icon: '✨', text: 'Assembling your personalized Trip Palette 2.0...', progress: 96 }
+  { icon: '•', text: 'Navigating 3D spherical coordinates & flight routes...', progress: 18 },
+  { icon: '•', text: 'Analysing climate & Open-Meteo historical weather averages...', progress: 42 },
+  { icon: '•', text: 'Extracting real photographic color swatches & harmony ratios...', progress: 68 },
+  { icon: '•', text: 'Executing algorithmic 5-4-3-2-1 capsule wardrobe pairing...', progress: 88 },
+  { icon: '•', text: 'Assembling your personalized Trip Palette 2.0...', progress: 96 }
 ]
 
 export default function AILoader({ destination }) {
@@ -66,8 +67,9 @@ export default function AILoader({ destination }) {
       </div>
 
       <div className="ai-loader-hint">
-        💡 Pro Tip: Trip Palette uses the 5-4-3-2-1 wardrobe method to eliminate luggage bulk while matching local climate aesthetics.
+        Pro Tip: Trip Palette uses the 5-4-3-2-1 wardrobe method to eliminate luggage bulk while matching local climate aesthetics.
       </div>
     </motion.div>
   )
 }
+

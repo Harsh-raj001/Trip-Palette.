@@ -1,3 +1,4 @@
+"use client";
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -113,7 +114,7 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
           <span className="pill-label">FROM</span>
-          <span className="pill-val">📅 {fmtDisplay(start)}</span>
+          <span className="pill-val">{fmtDisplay(start)}</span>
         </motion.button>
 
         <span className="date-arrow-sep">➔</span>
@@ -127,7 +128,7 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
           <span className="pill-label">TO</span>
-          <span className="pill-val">🏁 {fmtDisplay(end)}</span>
+          <span className="pill-val">{fmtDisplay(end)}</span>
         </motion.button>
       </div>
 
@@ -143,19 +144,19 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
           >
             {/* Quick Travel Presets */}
             <div className="date-presets">
-              <span className="presets-title">✨ Quick Travel Presets</span>
+              <span className="presets-title">Quick Travel Presets</span>
               <div className="preset-pills">
                 <motion.button type="button" whileHover={{ scale: 1.05 }} onClick={() => applyPreset(3)}>
-                  🌴 Weekend (3D)
+                  Weekend (3D)
                 </motion.button>
                 <motion.button type="button" whileHover={{ scale: 1.05 }} onClick={() => applyPreset(7)}>
-                  ☀️ 1 Week (7D)
+                  1 Week (7D)
                 </motion.button>
                 <motion.button type="button" whileHover={{ scale: 1.05 }} onClick={() => applyPreset(14)}>
-                  🍂 2 Weeks (14D)
+                  2 Weeks (14D)
                 </motion.button>
                 <motion.button type="button" whileHover={{ scale: 1.05 }} onClick={() => applyPreset(30)}>
-                  ❄️ 1 Month (30D)
+                  1 Month (30D)
                 </motion.button>
               </div>
             </div>
@@ -166,33 +167,29 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
                 type="button" 
                 className="cal-nav-btn" 
                 onClick={handlePrevMonth}
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(217, 119, 87, 0.15)' }}
                 whileTap={{ scale: 0.9 }}
               >
                 ◀
               </motion.button>
               <div className="month-year-display">
-                <strong>{MONTH_NAMES[viewMonth]}</strong> <span>{viewYear}</span>
+                <strong>{MONTH_NAMES[viewMonth]}</strong> {viewYear}
               </div>
               <motion.button 
                 type="button" 
                 className="cal-nav-btn" 
                 onClick={handleNextMonth}
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(217, 119, 87, 0.15)' }}
                 whileTap={{ scale: 0.9 }}
               >
                 ▶
               </motion.button>
             </div>
 
-            {/* Day Names Grid */}
+            {/* Day Names Header */}
             <div className="cal-days-grid">
-              {DAY_NAMES.map(d => (
-                <div key={d} className="cal-day-name">{d}</div>
-              ))}
+              {DAY_NAMES.map(d => <span key={d} className="cal-day-name">{d}</span>)}
             </div>
 
-            {/* Days Cells Grid */}
+            {/* Calendar Days Cells */}
             <div className="cal-cells-grid">
               {allCells.map((dayNum, idx) => {
                 if (dayNum === null) {
@@ -201,21 +198,21 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
                 const yyyy = viewYear
                 const mm = String(viewMonth + 1).padStart(2, '0')
                 const dd = String(dayNum).padStart(2, '0')
-                const cellStr = `${yyyy}-${mm}-${dd}`
+                const dateStr = `${yyyy}-${mm}-${dd}`
 
-                const isStart = cellStr === start
-                const isEnd = cellStr === end
-                const isInRange = start && end && cellStr > start && cellStr < end
+                const isStart = dateStr === start
+                const isEnd = dateStr === end
+                const inRange = start && end && dateStr > start && dateStr < end
 
                 let cellClass = 'cal-cell day'
                 if (isStart) cellClass += ' is-start'
                 if (isEnd) cellClass += ' is-end'
-                if (isInRange) cellClass += ' in-range'
+                if (inRange) cellClass += ' in-range'
 
                 return (
                   <motion.button
-                    key={cellStr}
                     type="button"
+                    key={dateStr}
                     className={cellClass}
                     onClick={() => handleDayClick(dayNum)}
                     whileHover={{ scale: 1.15, zIndex: 10 }}
@@ -230,7 +227,7 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
             {/* Dropdown Footer */}
             <div className="date-popover-footer">
               <div className="trip-duration-badge">
-                <span>🧳 Trip Duration: <strong>{tripDays || 0} Days</strong></span>
+                <span>Trip Duration: <strong>{tripDays || 0} Days</strong></span>
               </div>
               <motion.button
                 type="button"
@@ -248,3 +245,4 @@ export default function DatePickerDropdown({ start, end, onSelectStart, onSelect
     </div>
   )
 }
+

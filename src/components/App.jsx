@@ -1,7 +1,8 @@
+"use client";
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import confetti from 'canvas-confetti'
-import { searchCities, getWeather, getPhotos } from './api.js'
+import { searchCities, getWeather, getPhotos, fetchAttractions } from './api.js'
 import { loadImage, extractPalette } from './palette.js'
 import { buildPacking, colorNotes, verifyCapsulePairing } from './packing.js'
 import BoardingPassModal from './BoardingPassModal.jsx'
@@ -9,6 +10,62 @@ import Globe3D from './Globe3D.jsx'
 import AILoader from './AILoader.jsx'
 import DatePickerDropdown from './DatePickerDropdown.jsx'
 import HeroSection from './HeroSection.jsx'
+
+const WeatherWidget = ({ weather, packing }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const cardRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
+
+  return (
+    <motion.div 
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      className="card glass-panel" 
+      style={{ 
+        padding: '24px', 
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      <div 
+        style={{
+          position: 'absolute',
+          top: mousePos.y,
+          left: mousePos.x,
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(250, 204, 21, 0.12) 0%, rgba(250, 204, 21, 0) 70%)',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+          transition: 'opacity 0.3s ease'
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>Live Weather Forecast</h3>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ fontSize: '3rem', fontWeight: 700, letterSpacing: '-0.05em' }}>{Math.round(packing.warmest)}°C</div>
+          <div>
+            <div style={{ fontWeight: 600 }}>{weather.typical ? 'Typical Conditions' : 'Live Forecast'}</div>
+            <div className="subtitle-text">Perfect conditions for your activities.</div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 const ACTS = [
   { id: 'work', label: 'Work / business' },
@@ -44,7 +101,13 @@ export default function App() {
   const [carryOn, setCarryOn] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [favorites, setFavorites] = useState({})
+  const [attractions, setAttractions] = useState([])
   const debounce = useRef(null)
+
+  // Cinematic Parallax Setup
+  const { scrollY } = useScroll();
+  const photoY = useTransform(scrollY, [0, 800], [0, 150]);
+  const photoScale = useTransform(scrollY, [0, 800], [1, 1.15]);
 
   const toggleFavorite = (color, e) => {
     e.stopPropagation()
@@ -66,12 +129,14 @@ export default function App() {
     setLoading(true); setErr('')
     const days = Math.round((new Date(e) - new Date(s)) / 86400000) + 1
     try {
-      const [w, ph] = await Promise.all([
+      const [w, ph, attr] = await Promise.all([
         getWeather(pl.lat, pl.lon, s, e),
-        getPhotos(label(pl))
+        getPhotos(label(pl)),
+        fetchAttractions(pl.lat, pl.lon)
       ])
       setWeather(w)
       setPhotos(ph)
+      setAttractions(attr)
       const pals = await Promise.all(ph.map(async p => {
         try { return extractPalette(await loadImage(p.url)) } catch { return null }
       }))
@@ -176,7 +241,7 @@ export default function App() {
           {/* Top Header Banner */}
           <div className="results-header-banner glass-panel">
             <div className="banner-left">
-              <div className="route-badge">📍 TARGET LOCK: {place.country.toUpperCase()}</div>
+              <div className="route-badge">TARGET LOCK: {place.country.toUpperCase()}</div>
               <h1>{place.name}</h1>
               <p className="banner-meta">{fmt(start)} – {fmt(end)} ({tripDays} Days) · {weather.typical ? 'Historical Typical Weather' : 'Live 16-Day Forecast'}</p>
             </div>
@@ -186,7 +251,7 @@ export default function App() {
                 <span className="temp-lbl">Forecast Temperature Range</span>
               </div>
               <button className="share-btn-accent" onClick={() => setShowShareModal(true)}>
-                ✈️ Share IG Story Boarding Pass
+                Share IG Story Boarding Pass
               </button>
             </div>
           </div>
@@ -198,9 +263,14 @@ export default function App() {
               <h2>Landscape Photography & Palette Extraction</h2>
               {photos.length > 0 ? (
                 <>
-                  <div className="photo-box">
-                    <img src={photos[photoIx].url} alt={place.name} crossOrigin="anonymous" />
-                    <div className="credit">photo: <a href={photos[photoIx].page} target="_blank" rel="noreferrer">{photos[photoIx].credit || 'Wikimedia Commons'}</a></div>
+                  <div className="photo-box" style={{ overflow: 'hidden' }}>
+                    <motion.img 
+                      src={photos[photoIx].url} 
+                      alt={place.name} 
+                      crossOrigin="anonymous" 
+                      style={{ y: photoY, scale: photoScale, transformOrigin: 'center center' }}
+                    />
+                    <div className="credit" style={{ position: 'relative', zIndex: 2 }}>photo: <a href={photos[photoIx].page} target="_blank" rel="noreferrer">{photos[photoIx].credit || 'Wikimedia Commons'}</a></div>
                   </div>
                   {photos.length > 1 && (
                     <div className="thumbs">
@@ -217,8 +287,10 @@ export default function App() {
                         <motion.div 
                           className="swatch" 
                           key={i}
-                          whileHover={{ y: -5, scale: 1.03, boxShadow: '0 12px 24px rgba(42, 36, 33, 0.15)' }}
-                          transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          whileHover={{ y: -5, scale: 1.03, boxShadow: '0 12px 24px rgba(0, 0, 0, 0.15)' }}
+                          transition={{ delay: i * 0.08, type: 'spring', stiffness: 350, damping: 20 }}
                         >
                           <div className="chipcolor" style={{ background: h }}>
                             <button 
@@ -227,7 +299,7 @@ export default function App() {
                               onClick={(e) => toggleFavorite(h, e)}
                               title={favorites[h] ? 'Remove from favorites' : 'Save to favorites'}
                             >
-                              {favorites[h] ? '❤️' : '🤍'}
+                              {favorites[h] ? '♥' : '♡'}
                             </button>
                           </div>
                           <span>{h}</span>
@@ -260,7 +332,7 @@ export default function App() {
                     onChange={e => setCarryOn(e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
-                  <span className="toggle-label">🧳 Carry-on Mode (No Checked Bags)</span>
+                  <span className="toggle-label">Carry-on Mode (No Checked Bags)</span>
                 </label>
               </div>
               <div className="tier">{packing.tier}</div>
@@ -268,7 +340,7 @@ export default function App() {
               {capsule && (
                 <div className="capsule-box">
                   <div className="capsule-header">
-                    <strong>✈️ Carry-on Capsule Verified ({capsule.totalOutfits} Outfits)</strong>
+                    <strong>Carry-on Capsule Verified ({capsule.totalOutfits} Outfits)</strong>
                     <span className="capsule-badge">100% Palette Compatible</span>
                   </div>
                   <p className="capsule-summary">{capsule.summary}</p>
@@ -297,6 +369,32 @@ export default function App() {
               </ul>
             </div>
           </div>
+          
+          {/* Live APIs Grid */}
+          <div className="live-api-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+            {/* Weather Widget */}
+            <WeatherWidget weather={weather} packing={packing} />
+
+            {/* Places Widget */}
+            <div className="card glass-panel" style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>Local Hidden Gems</h3>
+              </div>
+              <ul className="list">
+                {attractions && attractions.length > 0 ? attractions.map((attr, idx) => (
+                  <li key={idx} style={{ padding: '8px 0', borderBottom: idx === attractions.length - 1 ? '0' : '1px dashed var(--line)' }}>
+                    <span className="name" style={{ gridArea: 'unset', width: '100%', textTransform: 'capitalize' }}>{attr.name}</span>
+                    <span className="why" style={{ gridArea: 'unset', width: '100%', textTransform: 'capitalize' }}>Highly rated {attr.type}</span>
+                  </li>
+                )) : (
+                  <li style={{ padding: '8px 0', borderBottom: '0' }}>
+                    <span className="name" style={{ gridArea: 'unset', width: '100%' }}>Discover locally</span>
+                    <span className="why" style={{ gridArea: 'unset', width: '100%' }}>No hidden gems found nearby.</span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
         </motion.section>
       )}
 
@@ -321,3 +419,5 @@ export default function App() {
     </div>
   )
 }
+
+

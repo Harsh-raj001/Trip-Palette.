@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from 'react'
 
 // Generate approximate landmass point cloud (lat, lon) for architectural 3D aesthetic
@@ -375,3 +376,4 @@ export default function Globe3D({ place }) {
     </div>
   )
 }
+

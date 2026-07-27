@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from 'react'
 
 const fmt = s => new Date(s + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
@@ -253,3 +254,4 @@ export default function BoardingPassModal({ place, start, end, tripDays, coldest
     </div>
   )
 }
+
